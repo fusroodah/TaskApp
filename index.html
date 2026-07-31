@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>The Floor &amp; The Menu</title>
+<meta name="theme-color" content="#15171c">
+<title>Daily Operating System</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600;700&display=swap');
 
@@ -20,6 +23,7 @@
     --line:#33363f;
     --good:#7fae6f;
     --good-dim:#3f5a3a;
+    --danger:#b06a5c;
   }
 
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -34,40 +38,11 @@
 
   .wrap{max-width:760px;margin:0 auto;}
 
-  .eyebrow{
-    font-size:11px;
-    letter-spacing:0.22em;
-    text-transform:uppercase;
-    color:var(--brass);
-    margin-bottom:14px;
-    font-weight:600;
-  }
-
-  h1{
-    font-family:'Source Serif 4',serif;
-    font-weight:600;
-    font-size:36px;
-    line-height:1.1;
-    margin:0 0 12px;
-  }
-  h1 em{color:var(--brass);font-style:italic;}
-
-  .sub{
-    font-size:14.5px;
-    line-height:1.6;
-    color:var(--parchment-dim);
-    max-width:540px;
-    margin-bottom:36px;
-  }
+  .eyebrow{font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:var(--brass);margin-bottom:14px;font-weight:600;}
+  .sub{font-size:14.5px;line-height:1.6;color:var(--parchment-dim);max-width:540px;margin-bottom:36px;}
 
   /* ---- FLOOR ---- */
-  .floor-block{
-    background:var(--ink-2);
-    border:1px solid var(--line);
-    border-radius:4px;
-    padding:26px 24px 8px;
-    margin-bottom:6px;
-  }
+  .floor-block{background:var(--ink-2);border:1px solid var(--line);border-radius:4px;padding:26px 24px 8px;margin-bottom:6px;}
   .floor-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
   .floor-title{font-family:'Source Serif 4',serif;font-size:21px;font-weight:600;color:var(--brass);}
   .floor-count{font-size:12px;color:var(--parchment-dim);font-variant-numeric:tabular-nums;}
@@ -89,29 +64,11 @@
   .floor-caption{text-align:center;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--parchment-dim);padding:9px 0 20px;}
 
   /* ---- WEEK HEADER ---- */
-  .week-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-end;
-    margin:48px 0 4px;
-    gap:12px;
-    flex-wrap:wrap;
-  }
+  .week-header{display:flex;justify-content:space-between;align-items:flex-end;margin:48px 0 4px;gap:12px;flex-wrap:wrap;}
   .menu-title{font-family:'Source Serif 4',serif;font-size:21px;font-weight:600;color:var(--slate);}
   .menu-desc{font-size:13px;color:var(--parchment-dim);max-width:520px;line-height:1.5;margin-top:4px;}
 
-  .reset-btn{
-    background:var(--ink-2);
-    border:1px solid var(--line);
-    color:var(--parchment-dim);
-    font-size:11.5px;
-    letter-spacing:.04em;
-    padding:9px 16px;
-    border-radius:100px;
-    cursor:pointer;
-    white-space:nowrap;
-    transition:all .15s ease;
-  }
+  .reset-btn{background:var(--ink-2);border:1px solid var(--line);color:var(--parchment-dim);font-size:11.5px;letter-spacing:.04em;padding:9px 16px;border-radius:100px;cursor:pointer;white-space:nowrap;transition:all .15s ease;}
   .reset-btn:hover{border-color:var(--slate);color:var(--parchment);}
 
   /* ---- WEEKLY CARDS ---- */
@@ -119,47 +76,16 @@
   .category-label{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--slate);font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:10px;}
   .category-label::after{content:"";flex:1;height:1px;background:var(--line);}
 
-  .counter-row{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    padding:12px 14px;
-    background:var(--ink-2);
-    border:1px solid var(--line);
-    border-radius:8px;
-    margin-bottom:8px;
-    cursor:pointer;
-    transition:all .15s ease;
-  }
+  .counter-row{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--ink-2);border:1px solid var(--line);border-radius:8px;margin-bottom:8px;cursor:pointer;transition:all .15s ease;}
   .counter-row:hover{border-color:var(--slate-dim);}
   .counter-row.complete{border-color:var(--good-dim);background:rgba(127,174,111,0.08);}
-
   .counter-info{flex:1;}
   .counter-title{font-size:14px;font-weight:600;color:var(--parchment);}
   .counter-row.complete .counter-title{color:var(--good);}
-
   .counter-controls{display:flex;align-items:center;gap:10px;}
-  .counter-value{
-    font-variant-numeric:tabular-nums;
-    font-size:15px;
-    font-weight:700;
-    color:var(--slate);
-    min-width:42px;
-    text-align:center;
-  }
+  .counter-value{font-variant-numeric:tabular-nums;font-size:15px;font-weight:700;color:var(--slate);min-width:42px;text-align:center;}
   .counter-row.complete .counter-value{color:var(--good);}
-  .minus-btn{
-    width:26px;height:26px;
-    border-radius:50%;
-    border:1px solid var(--line);
-    background:var(--ink-3);
-    color:var(--parchment-dim);
-    font-size:16px;
-    line-height:1;
-    display:flex;align-items:center;justify-content:center;
-    cursor:pointer;
-    transition:all .15s ease;
-  }
+  .minus-btn{width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:var(--ink-3);color:var(--parchment-dim);font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s ease;}
   .minus-btn:hover{border-color:var(--slate);color:var(--parchment);}
   .minus-btn:disabled{opacity:.3;cursor:default;}
 
@@ -176,12 +102,86 @@
   .nutri-label{font-size:13px;color:var(--parchment-dim);}
   .nutri-item.checked .nutri-label{color:var(--parchment-dim);text-decoration:line-through;}
 
+  /* ---- NOTES ---- */
+  .notes-header{margin:48px 0 4px;}
+  .notes-desc{font-size:13px;color:var(--parchment-dim);max-width:520px;line-height:1.5;margin-top:4px;}
+
+  .note-form{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;margin-bottom:18px;}
+  .note-input{
+    flex:1 1 240px;
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    color:var(--parchment);
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    padding:11px 14px;
+    border-radius:6px;
+    outline:none;
+  }
+  .note-input:focus{border-color:var(--slate);}
+  .note-date{
+    flex:0 0 150px;
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    color:var(--parchment-dim);
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+    padding:11px 10px;
+    border-radius:6px;
+    outline:none;
+  }
+  .note-add-btn{
+    flex:0 0 auto;
+    background:var(--brass-dim);
+    border:1px solid var(--brass-dim);
+    color:var(--ink);
+    font-weight:700;
+    font-size:13px;
+    padding:11px 20px;
+    border-radius:6px;
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .note-add-btn:hover{background:var(--brass);border-color:var(--brass);}
+
+  .note-list{display:flex;flex-direction:column;gap:8px;}
+  .note-row{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:12px 14px;
+  }
+  .note-row.done{opacity:.5;}
+  .note-check{
+    flex:0 0 18px;width:18px;height:18px;border-radius:4px;
+    border:1.5px solid var(--slate-dim);margin-top:2px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .note-row.done .note-check{background:var(--slate);border-color:var(--slate);}
+  .note-check svg{opacity:0;width:11px;height:11px;}
+  .note-row.done .note-check svg{opacity:1;}
+  .note-body{flex:1;}
+  .note-text{font-size:14px;color:var(--parchment);word-break:break-word;}
+  .note-row.done .note-text{text-decoration:line-through;}
+  .note-date-label{font-size:11.5px;color:var(--brass);margin-top:3px;font-weight:600;}
+  .note-del{
+    flex:0 0 auto;
+    background:none;border:none;color:var(--parchment-dim);
+    font-size:16px;cursor:pointer;padding:2px 4px;line-height:1;
+    transition:color .15s ease;
+  }
+  .note-del:hover{color:var(--danger);}
+  .notes-empty{font-size:13px;color:var(--parchment-dim);font-style:italic;padding:8px 0;}
+
   footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-size:11px;color:var(--parchment-dim);flex-wrap:wrap;gap:6px;}
 
   @media (max-width:520px){
-    h1{font-size:28px;}
     .floor-block{padding:20px 16px 6px;}
     .week-header{align-items:flex-start;}
+    .note-date{flex:1 1 100%;}
   }
 </style>
 </head>
@@ -189,7 +189,7 @@
 <div class="wrap">
 
   <div class="eyebrow">Daily Operating System</div>
-  <p class="sub">The floor resets every day. The weekly section below tallies as you go and resets when you hit "Reset Week" — tap an item once each time you do it.</p>
+  <p class="sub">The floor resets every day. The weekly section tallies as you go and resets when you hit "Reset Week." Notes stick around until you clear them.</p>
 
   <div class="floor-block">
     <div class="floor-head">
@@ -249,9 +249,22 @@
     <div class="nutri-grid" id="nutriGrid"></div>
   </div>
 
+  <div class="notes-header">
+    <div class="menu-title" style="color:var(--brass);">Notes &amp; Appointments</div>
+    <div class="notes-desc">Quick scratchpad for anything that doesn't fit the structure above — a reminder, an appointment, a stray thought. Nothing here resets on its own; check it off or delete it when you're done.</div>
+  </div>
+
+  <div class="note-form">
+    <input type="text" id="noteInput" class="note-input" placeholder="Add a note or appointment…">
+    <input type="date" id="noteDate" class="note-date">
+    <button class="note-add-btn" id="noteAddBtn">Add</button>
+  </div>
+
+  <div class="note-list" id="noteList"></div>
+
   <footer>
     <span id="todayLabel"></span>
-    <span>floor resets daily · week resets on tap</span>
+    <span>floor resets daily · week resets on tap · notes persist</span>
   </footer>
 
 </div>
@@ -262,6 +275,18 @@
 
   const FLOOR_KEY = 'floor-menu:' + today;
   const WEEK_KEY = 'weekly-tracker';
+  const NOTES_KEY = 'notes-appointments';
+
+  // ---------- generic localStorage helpers ----------
+  function loadJSON(key, fallback){
+    try{
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    }catch(e){ return fallback; }
+  }
+  function saveJSON(key, value){
+    try{ localStorage.setItem(key, JSON.stringify(value)); }catch(e){ console.error('save failed', e); }
+  }
 
   // { key, title, note, target }  target=null means open tally
   const PHYSICAL = [
@@ -305,7 +330,7 @@
     '7 scoops protein powder','7 softgels Omega-3 + Vit D','200g flatbread','400g spinach'
   ];
 
-  let weekState = { counters:{}, nutri:{} };
+  let weekState = loadJSON(WEEK_KEY, { counters:{}, nutri:{} });
 
   function renderCounters(list, containerId){
     const el = document.getElementById(containerId);
@@ -327,13 +352,13 @@
       row.addEventListener('click', (e)=>{
         if(e.target.classList.contains('minus-btn')) return;
         weekState.counters[item.key] = (weekState.counters[item.key]||0) + 1;
-        saveWeek();
+        saveJSON(WEEK_KEY, weekState);
         renderAll();
       });
       row.querySelector('.minus-btn').addEventListener('click', (e)=>{
         e.stopPropagation();
         weekState.counters[item.key] = Math.max(0, (weekState.counters[item.key]||0) - 1);
-        saveWeek();
+        saveJSON(WEEK_KEY, weekState);
         renderAll();
       });
       el.appendChild(row);
@@ -351,7 +376,7 @@
       row.innerHTML = `<div class="nutri-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#15171c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="nutri-label">${label}</div>`;
       row.addEventListener('click', ()=>{
         weekState.nutri[key] = !weekState.nutri[key];
-        saveWeek();
+        saveJSON(WEEK_KEY, weekState);
         renderNutrition();
       });
       grid.appendChild(row);
@@ -366,44 +391,24 @@
     renderCounters(SOCIAL, 'socialCounters');
   }
 
-  async function saveWeek(){
-    try{ await window.storage.set(WEEK_KEY, JSON.stringify(weekState)); }catch(e){ console.error('save failed', e); }
-  }
-
-  async function loadWeek(){
-    try{
-      const res = await window.storage.get(WEEK_KEY);
-      if(res && res.value){ weekState = JSON.parse(res.value); }
-    }catch(e){ weekState = { counters:{}, nutri:{} }; }
-    renderAll();
-    renderNutrition();
-  }
-
   document.getElementById('resetWeekBtn').addEventListener('click', ()=>{
     if(confirm('Reset all weekly counters and groceries to zero?')){
       weekState = { counters:{}, nutri:{} };
-      saveWeek();
+      saveJSON(WEEK_KEY, weekState);
       renderAll();
       renderNutrition();
     }
   });
 
   // ---- Floor logic (daily) ----
-  let floorState = {};
+  let floorState = loadJSON(FLOOR_KEY, {});
   function computeFoundation(){
     const total = document.querySelectorAll('#floorItems .item').length;
     const done = document.querySelectorAll('#floorItems .item.checked').length;
     document.getElementById('foundationFill').style.width = (done/total*100) + '%';
     document.getElementById('floorDone').textContent = done;
   }
-  async function saveFloor(){
-    try{ await window.storage.set(FLOOR_KEY, JSON.stringify(floorState)); }catch(e){ console.error(e); }
-  }
-  async function loadFloor(){
-    try{
-      const res = await window.storage.get(FLOOR_KEY);
-      if(res && res.value){ floorState = JSON.parse(res.value); }
-    }catch(e){ floorState = {}; }
+  function initFloor(){
     document.querySelectorAll('#floorItems [data-key]').forEach(el=>{
       const k = el.getAttribute('data-key');
       if(floorState[k]) el.classList.add('checked'); else el.classList.remove('checked');
@@ -416,12 +421,100 @@
       floorState[k] = !floorState[k];
       el.classList.toggle('checked');
       computeFoundation();
-      saveFloor();
+      saveJSON(FLOOR_KEY, floorState);
     });
   });
 
-  loadFloor();
-  loadWeek();
+  // ---- Notes & Appointments (persist indefinitely) ----
+  let notes = loadJSON(NOTES_KEY, []);
+
+  function renderNotes(){
+    const list = document.getElementById('noteList');
+    list.innerHTML = '';
+    if(notes.length === 0){
+      list.innerHTML = '<div class="notes-empty">Nothing here yet.</div>';
+      return;
+    }
+    // sort: undone first, then by date (items with a date first, soonest first), then by creation
+    const sorted = [...notes].sort((a,b)=>{
+      if(a.done !== b.done) return a.done ? 1 : -1;
+      if(a.date && b.date) return a.date.localeCompare(b.date);
+      if(a.date) return -1;
+      if(b.date) return 1;
+      return a.createdAt - b.createdAt;
+    });
+    sorted.forEach(note=>{
+      const row = document.createElement('div');
+      row.className = 'note-row' + (note.done ? ' done' : '');
+      const dateLabel = note.date ? `<div class="note-date-label">${formatDate(note.date)}</div>` : '';
+      row.innerHTML = `
+        <div class="note-check"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#15171c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="note-body">
+          <div class="note-text">${escapeHtml(note.text)}</div>
+          ${dateLabel}
+        </div>
+        <button class="note-del" aria-label="delete">✕</button>`;
+      row.querySelector('.note-check').addEventListener('click', ()=>{
+        note.done = !note.done;
+        saveJSON(NOTES_KEY, notes);
+        renderNotes();
+      });
+      row.querySelector('.note-del').addEventListener('click', ()=>{
+        notes = notes.filter(n=>n.id !== note.id);
+        saveJSON(NOTES_KEY, notes);
+        renderNotes();
+      });
+      list.appendChild(row);
+    });
+  }
+
+  function formatDate(iso){
+    const d = new Date(iso + 'T00:00:00');
+    return d.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' });
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function addNote(){
+    const input = document.getElementById('noteInput');
+    const dateInput = document.getElementById('noteDate');
+    const text = input.value.trim();
+    if(!text) return;
+    notes.push({
+      id: Date.now() + '-' + Math.random().toString(36).slice(2,7),
+      text,
+      date: dateInput.value || null,
+      done: false,
+      createdAt: Date.now()
+    });
+    saveJSON(NOTES_KEY, notes);
+    input.value = '';
+    dateInput.value = '';
+    renderNotes();
+    input.focus();
+  }
+
+  document.getElementById('noteAddBtn').addEventListener('click', addNote);
+  document.getElementById('noteInput').addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter') addNote();
+  });
+
+  // ---- init ----
+  initFloor();
+  renderAll();
+  renderNutrition();
+  renderNotes();
+
+  // ---- service worker (offline support) ----
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', ()=>{
+      navigator.serviceWorker.register('service-worker.js').catch(()=>{});
+    });
+  }
 </script>
 </body>
 </html>
