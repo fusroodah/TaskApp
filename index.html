@@ -22,16 +22,31 @@
   html,body{margin:0;padding:0;}
   body{background:var(--ink);color:var(--parchment);font-family:'Inter',sans-serif;min-height:100vh;padding:40px 16px 90px;}
   .wrap{max-width:760px;margin:0 auto;}
-  .eyebrow{font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:var(--brass);margin-bottom:14px;font-weight:600;}
+
+  .top-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+  .eyebrow{font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:var(--brass);font-weight:600;}
   .sub{font-size:14.5px;line-height:1.6;color:var(--parchment-dim);max-width:540px;margin-bottom:36px;}
 
-  /* generic icon buttons used across every editable row */
+  .edit-mode-btn{
+    background:var(--ink-2);border:1px solid var(--line);color:var(--parchment-dim);
+    font-size:12px;letter-spacing:.04em;padding:9px 16px;border-radius:100px;cursor:pointer;
+    white-space:nowrap;transition:all .15s ease;
+  }
+  .edit-mode-btn:hover{border-color:var(--slate);color:var(--parchment);}
+  body.edit-mode .edit-mode-btn{background:var(--brass);border-color:var(--brass);color:var(--ink);font-weight:700;}
+
+  /* editing affordances: hidden unless body.edit-mode */
+  .row-actions, .add-row, .add-category-row{display:none;}
+  body.edit-mode .row-actions{display:flex;}
+  body.edit-mode .add-row{display:flex;}
+  body.edit-mode .add-category-row{display:flex;}
+
   .icon-btn{background:none;border:none;color:var(--parchment-dim);font-size:14px;cursor:pointer;padding:4px 6px;line-height:1;border-radius:4px;transition:all .15s ease;flex:0 0 auto;}
   .icon-btn:hover{color:var(--parchment);background:var(--ink-3);}
   .icon-btn.danger:hover{color:var(--danger);}
-  .row-actions{display:flex;align-items:center;gap:2px;}
+  .row-actions{align-items:center;gap:2px;}
 
-  /* ---- FLOOR ---- */
+  /* ---- FLOOR (not collapsible) ---- */
   .floor-block{background:var(--ink-2);border:1px solid var(--line);border-radius:4px;padding:26px 24px 16px;margin-bottom:6px;}
   .floor-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
   .floor-title{font-family:'Source Serif 4',serif;font-size:21px;font-weight:600;color:var(--brass);}
@@ -54,7 +69,7 @@
   .floor-caption{text-align:center;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--parchment-dim);padding:9px 0 20px;}
 
   /* ---- add-new rows (shared style) ---- */
-  .add-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+  .add-row{flex-wrap:wrap;gap:8px;margin-top:14px;}
   .add-input{flex:1 1 160px;background:var(--ink-3);border:1px solid var(--line);color:var(--parchment);font-family:'Inter',sans-serif;font-size:13.5px;padding:9px 12px;border-radius:6px;outline:none;}
   .add-input:focus{border-color:var(--slate);}
   .add-input.small{flex:0 0 90px;}
@@ -75,9 +90,11 @@
   .reset-btn{background:var(--ink-2);border:1px solid var(--line);color:var(--parchment-dim);font-size:11.5px;letter-spacing:.04em;padding:9px 16px;border-radius:100px;cursor:pointer;white-space:nowrap;transition:all .15s ease;}
   .reset-btn:hover{border-color:var(--slate);color:var(--parchment);}
 
-  /* ---- CATEGORY / COUNTER ---- */
+  /* ---- CATEGORY / COUNTER (collapsible) ---- */
   .category{margin-top:30px;}
-  .category-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .category-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;}
+  .chevron-btn{background:none;border:none;color:var(--slate);font-size:11px;cursor:pointer;padding:2px 4px;flex:0 0 auto;transition:transform .15s ease;}
+  .chevron-btn.collapsed{transform:rotate(-90deg);}
   .category-label{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--slate);font-weight:600;white-space:nowrap;}
   .category-label-input{background:var(--ink-3);border:1px solid var(--slate);color:var(--slate);font-size:12px;letter-spacing:.08em;text-transform:uppercase;padding:5px 8px;border-radius:5px;outline:none;}
   .category-rule{flex:1;height:1px;background:var(--line);}
@@ -95,9 +112,9 @@
   .minus-btn:disabled{opacity:.3;cursor:default;}
 
   .cap-note{font-size:12px;color:var(--parchment-dim);margin:8px 0 0;font-style:italic;}
-  .add-category-row{margin-top:22px;display:flex;gap:8px;flex-wrap:wrap;}
+  .add-category-row{margin-top:22px;gap:8px;}
 
-  /* ---- NOTES ---- */
+  /* ---- NOTES (not collapsible) ---- */
   .notes-header{margin:0 0 4px;}
   .notes-desc{font-size:13px;color:var(--parchment-dim);max-width:520px;line-height:1.5;margin-top:4px;}
   .note-form{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;margin-bottom:18px;}
@@ -119,7 +136,7 @@
   .note-date-label{font-size:11.5px;color:var(--brass);margin-top:3px;font-weight:600;}
   .notes-empty{font-size:13px;color:var(--parchment-dim);font-style:italic;padding:8px 0;}
 
-  /* ---- GROCERIES ---- */
+  /* ---- GROCERIES (collapsible) ---- */
   .nutri-grid{display:flex;flex-direction:column;gap:4px;}
   .nutri-item{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--line);}
   .nutri-box{flex:0 0 16px;width:16px;height:16px;border-radius:3px;border:1.5px solid var(--slate-dim);display:flex;align-items:center;justify-content:center;cursor:pointer;}
@@ -141,10 +158,13 @@
 <body>
 <div class="wrap">
 
-  <div class="eyebrow">Daily Operating System</div>
-  <p class="sub">The floor resets every day. The weekly section tallies as you go. Everything below is yours to edit — tap ✎ to rename, ✕ to remove, or use the add row at the bottom of each section.</p>
+  <div class="top-row">
+    <div class="eyebrow">Daily Operating System</div>
+    <button class="edit-mode-btn" id="editModeBtn">✎ Edit</button>
+  </div>
+  <p class="sub">The floor resets every day. The weekly section tallies as you go. Tap "Edit" to rename, remove, or add things — otherwise everything below just responds to a normal tap.</p>
 
-  <!-- ===== FLOOR ===== -->
+  <!-- ===== FLOOR (not collapsible) ===== -->
   <div class="floor-block">
     <div class="floor-head">
       <div class="floor-title">Today</div>
@@ -161,7 +181,7 @@
   </div>
   <div class="floor-caption">the floor holds regardless of what's built on it</div>
 
-  <!-- ===== NOTES (moved to top) ===== -->
+  <!-- ===== NOTES (not collapsible) ===== -->
   <div class="category">
     <div class="notes-header">
       <div class="menu-title" style="color:var(--brass);">Notes &amp; Appointments</div>
@@ -179,7 +199,7 @@
   <div class="week-header">
     <div>
       <div class="menu-title">The Week</div>
-      <div class="menu-desc">Tap a row to log it. Use − to correct a mistap, ✎ to rename or change a target, ✕ to remove. Reset once, at the end of the week.</div>
+      <div class="menu-desc">Tap a row to log it. In Edit mode: − to correct, ✎ to rename or change a target, ✕ to remove, ▾ to collapse a category.</div>
     </div>
     <button class="reset-btn" id="resetWeekBtn">↺ Reset Week</button>
   </div>
@@ -191,16 +211,19 @@
     <button class="add-btn" id="addCategoryBtn">+ Add Category</button>
   </div>
 
-  <!-- ===== GROCERIES (moved to very bottom) ===== -->
+  <!-- ===== GROCERIES (collapsible, very bottom) ===== -->
   <div class="category">
-    <div class="category-head">
+    <div class="category-head" id="groceryHead">
+      <button class="chevron-btn" id="groceryChevron">▾</button>
       <div class="category-label">Weekly Groceries</div>
       <div class="category-rule"></div>
     </div>
-    <div class="nutri-grid" id="nutriGrid"></div>
-    <div class="add-row">
-      <input type="text" id="groceryAddInput" class="add-input" placeholder="New grocery item…">
-      <button class="add-btn" id="groceryAddBtn">Add</button>
+    <div class="collapsible-body" id="groceryBody">
+      <div class="nutri-grid" id="nutriGrid"></div>
+      <div class="add-row">
+        <input type="text" id="groceryAddInput" class="add-input" placeholder="New grocery item…">
+        <button class="add-btn" id="groceryAddBtn">Add</button>
+      </div>
     </div>
   </div>
 
@@ -220,6 +243,7 @@
   const CATEGORIES_KEY = 'week-categories-config';
   const WEEK_STATE_KEY = 'weekly-tracker';
   const GROCERY_CONFIG_KEY = 'grocery-items-config';
+  const GROCERY_COLLAPSE_KEY = 'grocery-collapsed';
   const NOTES_KEY = 'notes-appointments';
 
   function loadJSON(key, fallback){
@@ -233,7 +257,7 @@
   function escapeHtml(str){ const d=document.createElement('div'); d.textContent = str; return d.innerHTML; }
   const checkSvg = '<svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#15171c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
-  // ---------------- DEFAULT SEED DATA (ids match the previous fixed keys, so existing progress carries over) ----------------
+  // ---------------- DEFAULT SEED DATA (ids match previous fixed keys, so existing progress carries over) ----------------
   const DEFAULT_FLOOR = [
     {id:'sunlight', title:'Sunlight right after waking', note:'2–5 minutes, no negotiation'},
     {id:'meditation', title:'Morning meditation', note:"Even if it's 2 minutes, not 20"},
@@ -245,17 +269,17 @@
   ];
 
   const DEFAULT_CATEGORIES = [
-    { id:'physical', name:'Physical Activities', items:[
+    { id:'physical', name:'Physical Activities', collapsed:false, items:[
       {id:'resist', title:'Resistance training', target:4},
       {id:'zone2', title:'Zone 2 Cardio', target:3},
       {id:'hiit', title:'HIIT', target:1},
       {id:'yoga', title:'Yoga', target:1},
     ]},
-    { id:'habits', name:'Beneficial Habits', items:[
+    { id:'habits', name:'Beneficial Habits', collapsed:false, items:[
       {id:'journal', title:'Journaling', target:3},
       {id:'gratitude', title:'Gratitude journaling', target:2},
     ]},
-    { id:'intellectual', name:'Intellectual Exploration', items:[
+    { id:'intellectual', name:'Intellectual Exploration', collapsed:false, items:[
       {id:'course', title:'Behavioral Biology / Intro Psychology', target:2},
       {id:'philosophy', title:'Philosophical reading & analysis', target:2},
       {id:'religious', title:'Lighter / religious reading', target:2},
@@ -263,7 +287,7 @@
       {id:'intessay', title:'Writing intellectual essays', target:null},
       {id:'language', title:'Language study exploration', target:null},
     ]},
-    { id:'creative', name:'Creative Expression', items:[
+    { id:'creative', name:'Creative Expression', collapsed:false, items:[
       {id:'guitar', title:'Musicking', target:null},
       {id:'aesthetic', title:'Aesthetic exploration', target:null},
       {id:'visual', title:'Visual Entertainment', target:null},
@@ -271,7 +295,7 @@
       {id:'newexp', title:'New experiences', target:null},
       {id:'nature', title:'Nature', target:null},
     ]},
-    { id:'social', name:'Social', items:[
+    { id:'social', name:'Social', collapsed:false, items:[
       {id:'career', title:'Track career trajectory', target:null},
       {id:'network', title:'Build network', target:null},
       {id:'beneficial', title:'Be beneficial to others', target:null},
@@ -288,11 +312,13 @@
   ].map((label,i)=>({id:'n'+i, label}));
 
   // ---------------- STATE ----------------
+  let editMode = false;
   let floorConfig = loadJSON(FLOOR_CONFIG_KEY, DEFAULT_FLOOR);
   let floorState = loadJSON(FLOOR_STATE_KEY, {});
   let categories = loadJSON(CATEGORIES_KEY, DEFAULT_CATEGORIES);
   let weekState = loadJSON(WEEK_STATE_KEY, { counters:{}, nutri:{} });
   let groceryConfig = loadJSON(GROCERY_CONFIG_KEY, DEFAULT_GROCERIES);
+  let groceryCollapsed = loadJSON(GROCERY_COLLAPSE_KEY, false);
   let notes = loadJSON(NOTES_KEY, []);
 
   const persistFloorConfig = () => saveJSON(FLOOR_CONFIG_KEY, floorConfig);
@@ -300,7 +326,15 @@
   const persistCategories = () => saveJSON(CATEGORIES_KEY, categories);
   const persistWeekState = () => saveJSON(WEEK_STATE_KEY, weekState);
   const persistGroceryConfig = () => saveJSON(GROCERY_CONFIG_KEY, groceryConfig);
+  const persistGroceryCollapsed = () => saveJSON(GROCERY_COLLAPSE_KEY, groceryCollapsed);
   const persistNotes = () => saveJSON(NOTES_KEY, notes);
+
+  // ================= EDIT MODE TOGGLE =================
+  document.getElementById('editModeBtn').addEventListener('click', ()=>{
+    editMode = !editMode;
+    document.body.classList.toggle('edit-mode', editMode);
+    document.getElementById('editModeBtn').textContent = editMode ? '✓ Done' : '✎ Edit';
+  });
 
   // ================= FLOOR =================
   function renderFloor(){
@@ -386,10 +420,12 @@
     const container = document.getElementById('categoriesContainer');
     container.innerHTML = '';
     categories.forEach(cat=>{
+      const isCollapsed = !!cat.collapsed;
       const block = document.createElement('div');
       block.className = 'category';
       block.innerHTML = `
         <div class="category-head">
+          <button class="chevron-btn${isCollapsed ? ' collapsed' : ''}" title="collapse/expand">▾</button>
           <div class="category-label"></div>
           <div class="category-rule"></div>
           <div class="row-actions">
@@ -397,11 +433,14 @@
             <button class="icon-btn danger del-cat-btn" title="delete category">✕</button>
           </div>
         </div>
-        <div class="items-holder"></div>
-        <div class="add-row">
-          <input type="text" class="add-input add-item-title" placeholder="New item…">
-          <input type="number" min="0" class="add-input small add-item-target" placeholder="Target (optional)">
-          <button class="add-btn add-item-btn">Add</button>
+        <div class="collapsible-body" style="${isCollapsed ? 'display:none;' : ''}">
+          <div class="items-holder"></div>
+          ${cat.id === 'intellectual' ? '<div class="cap-note">Course, philosophy, and lighter reading have soft 2×/wk targets — pick what fits rather than chasing all three.</div>' : ''}
+          <div class="add-row">
+            <input type="text" class="add-input add-item-title" placeholder="New item…">
+            <input type="number" min="0" class="add-input small add-item-target" placeholder="Target (optional)">
+            <button class="add-btn add-item-btn">Add</button>
+          </div>
         </div>`;
       block.querySelector('.category-label').textContent = cat.name;
 
@@ -452,8 +491,21 @@
         itemsHolder.appendChild(row);
       });
 
-      block.querySelector('.edit-cat-btn').addEventListener('click', ()=> editCategoryName(block, cat));
-      block.querySelector('.del-cat-btn').addEventListener('click', ()=>{
+      // collapse toggle — clicking the chevron or the label toggles, but not the edit/delete icons
+      const toggleCollapse = ()=>{
+        cat.collapsed = !cat.collapsed;
+        persistCategories();
+        renderCategories();
+      };
+      block.querySelector('.chevron-btn').addEventListener('click', toggleCollapse);
+      block.querySelector('.category-label').addEventListener('click', toggleCollapse);
+
+      block.querySelector('.edit-cat-btn').addEventListener('click', (e)=>{
+        e.stopPropagation();
+        editCategoryName(block, cat);
+      });
+      block.querySelector('.del-cat-btn').addEventListener('click', (e)=>{
+        e.stopPropagation();
         if(confirm(`Delete the entire "${cat.name}" category and all its items?`)){
           cat.items.forEach(i=> delete weekState.counters[i.id]);
           categories = categories.filter(c=>c.id!==cat.id);
@@ -523,7 +575,7 @@
     const input = document.getElementById('newCategoryName');
     const name = input.value.trim();
     if(!name) return;
-    categories.push({id:genId('cat'), name, items:[]});
+    categories.push({id:genId('cat'), name, collapsed:false, items:[]});
     persistCategories();
     input.value='';
     renderCategories();
@@ -539,6 +591,20 @@
   });
 
   // ================= GROCERIES =================
+  function renderGroceryHeader(){
+    const chevron = document.getElementById('groceryChevron');
+    const body = document.getElementById('groceryBody');
+    chevron.classList.toggle('collapsed', groceryCollapsed);
+    body.style.display = groceryCollapsed ? 'none' : '';
+  }
+  function toggleGroceryCollapse(){
+    groceryCollapsed = !groceryCollapsed;
+    persistGroceryCollapsed();
+    renderGroceryHeader();
+  }
+  document.getElementById('groceryChevron').addEventListener('click', toggleGroceryCollapse);
+  document.querySelector('#groceryHead .category-label').addEventListener('click', toggleGroceryCollapse);
+
   function renderGroceries(){
     const grid = document.getElementById('nutriGrid');
     grid.innerHTML = '';
@@ -602,7 +668,7 @@
     renderGroceries();
   });
 
-  // ================= NOTES =================
+  // ================= NOTES (not collapsible, always visible) =================
   function renderNotes(){
     const list = document.getElementById('noteList');
     list.innerHTML = '';
@@ -692,6 +758,7 @@
   renderFloor();
   renderCategories();
   renderGroceries();
+  renderGroceryHeader();
   renderNotes();
 
   if('serviceWorker' in navigator){
