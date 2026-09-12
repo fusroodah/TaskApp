@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ops-cache-v3';
+const CACHE_NAME = 'ops-cache-v4';
 const FILES_TO_CACHE = [
   './index.html',
   './manifest.json',
@@ -22,15 +22,16 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+// Network-first: always try to get the freshest copy when online.
+// Only fall back to the cache when the network request fails (i.e. offline).
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      return cached || fetch(event.request).then((response) => {
-        return caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, response.clone());
-          return response;
-        });
-      }).catch(() => cached);
-    })
+    fetch(event.request)
+      .then((response) => {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
