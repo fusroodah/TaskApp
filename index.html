@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#15171c">
+<title>Daily Operating System</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root{
+    --ink:#15171c; --ink-2:#1c1f26; --ink-3:#22252d;
+    --parchment:#eae5da; --parchment-dim:#a9a49a;
+    --brass:#c69a53; --brass-dim:#8a723f;
+    --slate:#7c93a8; --slate-dim:#4c5a68;
+    --line:#33363f; --good:#7fae6f; --good-dim:#3f5a3a;
+    --danger:#b06a5c;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--ink);color:var(--parchment);font-family:'Inter',sans-serif;min-height:100vh;padding:40px 16px 90px;}
+  .wrap{max-width:760px;margin:0 auto;}
+
+  .top-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+  .eyebrow{font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:var(--brass);font-weight:600;}
+  .sub{font-size:14.5px;line-height:1.6;color:var(--parchment-dim);max-width:540px;margin-bottom:36px;}
+
+  .edit-mode-btn{
+    background:var(--ink-2);border:1px solid var(--line);color:var(--parchment-dim);
+    font-size:12px;letter-spacing:.04em;padding:9px 16px;border-radius:100px;cursor:pointer;
+    white-space:nowrap;transition:all .15s ease;
+  }
+  .edit-mode-btn:hover{border-color:var(--slate);color:var(--parchment);}
+  body.edit-mode .edit-mode-btn{background:var(--brass);border-color:var(--brass);color:var(--ink);font-weight:700;}
+
+  /* editing affordances: hidden unless body.edit-mode */
+  .row-actions, .add-row, .add-category-row{display:none;}
+  body.edit-mode .row-actions{display:flex;}
+  body.edit-mode .add-row{display:flex;}
+  body.edit-mode .add-category-row{display:flex;}
+
+  .icon-btn{background:none;border:none;color:var(--parchment-dim);font-size:14px;cursor:pointer;padding:4px 6px;line-height:1;border-radius:4px;transition:all .15s ease;flex:0 0 auto;}
+  .icon-btn:hover{color:var(--parchment);background:var(--ink-3);}
+  .icon-btn.danger:hover{color:var(--danger);}
+  .row-actions{align-items:center;gap:2px;}
+
+  /* ---- FLOOR (not collapsible) ---- */
+  .floor-block{background:var(--ink-2);border:1px solid var(--line);border-radius:4px;padding:26px 24px 16px;margin-bottom:6px;}
+  .floor-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+  .floor-title{font-family:'Source Serif 4',serif;font-size:21px;font-weight:600;color:var(--brass);}
+  .floor-count{font-size:12px;color:var(--parchment-dim);font-variant-numeric:tabular-nums;}
+  .floor-desc{font-size:13px;color:var(--parchment-dim);margin-bottom:18px;line-height:1.5;}
+
+  .item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-top:1px solid var(--line);user-select:none;}
+  .item:first-of-type{border-top:none;}
+  .box{flex:0 0 20px;width:20px;height:20px;border-radius:4px;border:1.5px solid var(--brass-dim);margin-top:1px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s ease;}
+  .item.checked .box{background:var(--brass);border-color:var(--brass);}
+  .box svg{opacity:0;transition:opacity .1s;width:12px;height:12px;}
+  .item.checked .box svg{opacity:1;}
+  .item-text{flex:1;min-width:0;}
+  .item-title{font-size:14.5px;font-weight:600;color:var(--parchment);}
+  .item.checked .item-title{color:var(--parchment-dim);text-decoration:line-through;text-decoration-color:var(--brass-dim);}
+  .item-note{font-size:12px;color:var(--parchment-dim);margin-top:3px;line-height:1.4;}
+
+  .foundation{height:6px;border-radius:0 0 4px 4px;background:var(--line);overflow:hidden;margin-top:14px;}
+  .foundation-fill{height:100%;background:linear-gradient(90deg,var(--brass-dim),var(--brass));width:0%;transition:width .3s ease;}
+  .floor-caption{text-align:center;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--parchment-dim);padding:9px 0 20px;}
+
+  /* ---- add-new rows (shared style) ---- */
+  .add-row{flex-wrap:wrap;gap:8px;margin-top:14px;}
+  .add-input{flex:1 1 160px;background:var(--ink-3);border:1px solid var(--line);color:var(--parchment);font-family:'Inter',sans-serif;font-size:13.5px;padding:9px 12px;border-radius:6px;outline:none;}
+  .add-input:focus{border-color:var(--slate);}
+  .add-input.small{flex:0 0 90px;}
+  .add-btn{flex:0 0 auto;background:var(--brass-dim);border:1px solid var(--brass-dim);color:var(--ink);font-weight:700;font-size:13px;padding:9px 16px;border-radius:6px;cursor:pointer;transition:all .15s ease;}
+  .add-btn:hover{background:var(--brass);border-color:var(--brass);}
+
+  /* inline edit form (shared) */
+  .edit-form{display:flex;flex-wrap:wrap;gap:6px;flex:1;align-items:center;}
+  .edit-input{flex:1 1 120px;background:var(--ink-3);border:1px solid var(--slate);color:var(--parchment);font-family:'Inter',sans-serif;font-size:13.5px;padding:6px 10px;border-radius:5px;outline:none;}
+  .edit-input.small{flex:0 0 80px;}
+  .edit-save{background:var(--good-dim);border:1px solid var(--good-dim);color:var(--ink);font-weight:700;font-size:12px;padding:6px 10px;border-radius:5px;cursor:pointer;}
+  .edit-cancel{background:none;border:1px solid var(--line);color:var(--parchment-dim);font-size:12px;padding:6px 10px;border-radius:5px;cursor:pointer;}
+
+  /* ---- WEEK HEADER ---- */
+  .week-header{display:flex;justify-content:space-between;align-items:flex-end;margin:48px 0 4px;gap:12px;flex-wrap:wrap;}
+  .menu-title{font-family:'Source Serif 4',serif;font-size:21px;font-weight:600;color:var(--slate);}
+  .menu-desc{font-size:13px;color:var(--parchment-dim);max-width:520px;line-height:1.5;margin-top:4px;}
+  .reset-btn{background:var(--ink-2);border:1px solid var(--line);color:var(--parchment-dim);font-size:11.5px;letter-spacing:.04em;padding:9px 16px;border-radius:100px;cursor:pointer;white-space:nowrap;transition:all .15s ease;}
+  .reset-btn:hover{border-color:var(--slate);color:var(--parchment);}
+
+  /* ---- CATEGORY / COUNTER (collapsible) ---- */
+  .category{margin-top:30px;}
+  .category-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;}
+  .chevron-btn{background:none;border:none;color:var(--slate);font-size:11px;cursor:pointer;padding:2px 4px;flex:0 0 auto;transition:transform .15s ease;}
+  .chevron-btn.collapsed{transform:rotate(-90deg);}
+  .category-label{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--slate);font-weight:600;white-space:nowrap;}
+  .category-label-input{background:var(--ink-3);border:1px solid var(--slate);color:var(--slate);font-size:12px;letter-spacing:.08em;text-transform:uppercase;padding:5px 8px;border-radius:5px;outline:none;}
+  .category-rule{flex:1;height:1px;background:var(--line);}
+
+  .counter-row{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--ink-2);border:1px solid var(--line);border-radius:8px;margin-bottom:8px;transition:all .15s ease;}
+  .counter-row.complete{border-color:var(--good-dim);background:rgba(127,174,111,0.08);}
+  .counter-info{flex:1;cursor:pointer;min-width:0;}
+  .counter-title{font-size:14px;font-weight:600;color:var(--parchment);}
+  .counter-row.complete .counter-title{color:var(--good);}
+  .counter-controls{display:flex;align-items:center;gap:10px;}
+  .counter-value{font-variant-numeric:tabular-nums;font-size:15px;font-weight:700;color:var(--slate);min-width:38px;text-align:center;}
+  .counter-row.complete .counter-value{color:var(--good);}
+  .minus-btn{width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:var(--ink-3);color:var(--parchment-dim);font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s ease;}
+  .minus-btn:hover{border-color:var(--slate);color:var(--parchment);}
+  .minus-btn:disabled{opacity:.3;cursor:default;}
+
+  .cap-note{font-size:12px;color:var(--parchment-dim);margin:8px 0 0;font-style:italic;}
+  .add-category-row{margin-top:22px;gap:8px;}
+
+  /* ---- NOTES (not collapsible) ---- */
+  .notes-header{margin:0 0 4px;}
+  .notes-desc{font-size:13px;color:var(--parchment-dim);max-width:520px;line-height:1.5;margin-top:4px;}
+  .note-form{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;margin-bottom:18px;}
+  .note-input{flex:1 1 240px;background:var(--ink-2);border:1px solid var(--line);color:var(--parchment);font-family:'Inter',sans-serif;font-size:14px;padding:11px 14px;border-radius:6px;outline:none;}
+  .note-input:focus{border-color:var(--slate);}
+  .note-date{flex:0 0 150px;background:var(--ink-2);border:1px solid var(--line);color:var(--parchment-dim);font-family:'Inter',sans-serif;font-size:13px;padding:11px 10px;border-radius:6px;outline:none;}
+  .note-add-btn{flex:0 0 auto;background:var(--brass-dim);border:1px solid var(--brass-dim);color:var(--ink);font-weight:700;font-size:13px;padding:11px 20px;border-radius:6px;cursor:pointer;transition:all .15s ease;}
+  .note-add-btn:hover{background:var(--brass);border-color:var(--brass);}
+  .note-list{display:flex;flex-direction:column;gap:8px;}
+  .note-row{display:flex;align-items:flex-start;gap:12px;background:var(--ink-2);border:1px solid var(--line);border-radius:8px;padding:12px 14px;}
+  .note-row.done{opacity:.5;}
+  .note-check{flex:0 0 18px;width:18px;height:18px;border-radius:4px;border:1.5px solid var(--slate-dim);margin-top:2px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .note-row.done .note-check{background:var(--slate);border-color:var(--slate);}
+  .note-check svg{opacity:0;width:11px;height:11px;}
+  .note-row.done .note-check svg{opacity:1;}
+  .note-body{flex:1;min-width:0;cursor:pointer;}
+  .note-text{font-size:14px;color:var(--parchment);word-break:break-word;}
+  .note-row.done .note-text{text-decoration:line-through;}
+  .note-date-label{font-size:11.5px;color:var(--brass);margin-top:3px;font-weight:600;}
+  .notes-empty{font-size:13px;color:var(--parchment-dim);font-style:italic;padding:8px 0;}
+
+  /* ---- GROCERIES (collapsible) ---- */
+  .nutri-grid{display:flex;flex-direction:column;gap:4px;}
+  .nutri-item{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--line);}
+  .nutri-box{flex:0 0 16px;width:16px;height:16px;border-radius:3px;border:1.5px solid var(--slate-dim);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .nutri-item.checked .nutri-box{background:var(--slate);border-color:var(--slate);}
+  .nutri-box svg{opacity:0;width:10px;height:10px;}
+  .nutri-item.checked .nutri-box svg{opacity:1;}
+  .nutri-label{font-size:13px;color:var(--parchment-dim);flex:1;cursor:pointer;min-width:0;}
+  .nutri-item.checked .nutri-label{color:var(--parchment-dim);text-decoration:line-through;}
+
+  footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-size:11px;color:var(--parchment-dim);flex-wrap:wrap;gap:6px;}
+
+  @media (max-width:520px){
+    .floor-block{padding:20px 16px 14px;}
+    .week-header{align-items:flex-start;}
+    .note-date{flex:1 1 100%;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top-row">
+    <div class="eyebrow">Daily Operating System</div>
+    <button class="edit-mode-btn" id="editModeBtn">✎ Edit</button>
+  </div>
+  <p class="sub">The floor resets every day. The weekly section tallies as you go. Tap "Edit" to rename, remove, or add things — otherwise everything below just responds to a normal tap.</p>
+
+  <!-- ===== FLOOR (not collapsible) ===== -->
+  <div class="floor-block">
+    <div class="floor-head">
+      <div class="floor-title">Today</div>
+      <div class="floor-count"><span id="floorDone">0</span>/<span id="floorTotal">0</span></div>
+    </div>
+    <div class="floor-desc">Non-negotiable. Hitting only these is a complete day.</div>
+    <div id="floorItems"></div>
+    <div class="foundation"><div class="foundation-fill" id="foundationFill"></div></div>
+    <div class="add-row">
+      <input type="text" id="floorAddTitle" class="add-input" placeholder="New floor item…">
+      <input type="text" id="floorAddNote" class="add-input" placeholder="Optional note">
+      <button class="add-btn" id="floorAddBtn">Add</button>
+    </div>
+  </div>
+  <div class="floor-caption">the floor holds regardless of what's built on it</div>
+
+  <!-- ===== NOTES (not collapsible) ===== -->
+  <div class="category">
+    <div class="notes-header">
+      <div class="menu-title" style="color:var(--brass);">Notes &amp; Appointments</div>
+      <div class="notes-desc">Scratchpad for anything that doesn't fit the structure — a reminder, an appointment, a stray thought. Nothing here resets on its own.</div>
+    </div>
+    <div class="note-form">
+      <input type="text" id="noteInput" class="note-input" placeholder="Add a note or appointment…">
+      <input type="date" id="noteDate" class="note-date">
+      <button class="note-add-btn" id="noteAddBtn">Add</button>
+    </div>
+    <div class="note-list" id="noteList"></div>
+  </div>
+
+  <!-- ===== WEEK ===== -->
+  <div class="week-header">
+    <div>
+      <div class="menu-title">The Week</div>
+      <div class="menu-desc">Tap a row to log it. In Edit mode: − to correct, ✎ to rename or change a target, ✕ to remove, ▾ to collapse a category.</div>
+    </div>
+    <button class="reset-btn" id="resetWeekBtn">↺ Reset Week</button>
+  </div>
+
+  <div id="categoriesContainer"></div>
+
+  <div class="add-category-row">
+    <input type="text" id="newCategoryName" class="add-input" placeholder="New category name…" style="max-width:280px;">
+    <button class="add-btn" id="addCategoryBtn">+ Add Category</button>
+  </div>
+
+  <!-- ===== GROCERIES (collapsible, very bottom) ===== -->
+  <div class="category">
+    <div class="category-head" id="groceryHead">
+      <button class="chevron-btn" id="groceryChevron">▾</button>
+      <div class="category-label">Weekly Groceries</div>
+      <div class="category-rule"></div>
+    </div>
+    <div class="collapsible-body" id="groceryBody">
+      <div class="nutri-grid" id="nutriGrid"></div>
+      <div class="add-row">
+        <input type="text" id="groceryAddInput" class="add-input" placeholder="New grocery item…">
+        <button class="add-btn" id="groceryAddBtn">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span id="todayLabel"></span>
+    <span>floor resets daily · week resets on tap · everything else persists</span>
+  </footer>
+
+</div>
+
+<script>
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('todayLabel').textContent = today;
+
+  const FLOOR_CONFIG_KEY = 'floor-items-config';
+  const FLOOR_STATE_KEY = 'floor-menu:' + today;
+  const CATEGORIES_KEY = 'week-categories-config';
+  const WEEK_STATE_KEY = 'weekly-tracker';
+  const GROCERY_CONFIG_KEY = 'grocery-items-config';
+  const GROCERY_COLLAPSE_KEY = 'grocery-collapsed';
+  const NOTES_KEY = 'notes-appointments';
+
+  function loadJSON(key, fallback){
+    try{ const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }
+    catch(e){ return fallback; }
+  }
+  function saveJSON(key, value){
+    try{ localStorage.setItem(key, JSON.stringify(value)); }catch(e){ console.error('save failed', e); }
+  }
+  function genId(prefix){ return prefix + '-' + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+  function escapeHtml(str){ const d=document.createElement('div'); d.textContent = str; return d.innerHTML; }
+  const checkSvg = '<svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#15171c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  // ---------------- DEFAULT SEED DATA (ids match previous fixed keys, so existing progress carries over) ----------------
+  const DEFAULT_FLOOR = [
+    {id:'sunlight', title:'Sunlight right after waking', note:'2–5 minutes, no negotiation'},
+    {id:'meditation', title:'Morning meditation', note:"Even if it's 2 minutes, not 20"},
+    {id:'math', title:'Math study', note:"Minimum 20–30 min, even if it's just reviewing notes"},
+    {id:'protein', title:'Protein scoop + Omega-3 / Vit D softgel + Creatine', note:''},
+    {id:'adhdmed', title:'ADHD medication', note:''},
+    {id:'movement', title:'Some movement', note:'A walk counts'},
+    {id:'teeth', title:'Teeth hygiene', note:''},
+  ];
+
+  const DEFAULT_CATEGORIES = [
+    { id:'physical', name:'Physical Activities', collapsed:false, items:[
+      {id:'resist', title:'Resistance training', target:4},
+      {id:'zone2', title:'Zone 2 Cardio', target:3},
+      {id:'hiit', title:'HIIT', target:1},
+      {id:'yoga', title:'Yoga', target:1},
+    ]},
+    { id:'habits', name:'Beneficial Habits', collapsed:false, items:[
+      {id:'journal', title:'Journaling', target:3},
+      {id:'gratitude', title:'Gratitude journaling', target:2},
+    ]},
+    { id:'intellectual', name:'Intellectual Exploration', collapsed:false, items:[
+      {id:'course', title:'Behavioral Biology / Intro Psychology', target:2},
+      {id:'philosophy', title:'Philosophical reading & analysis', target:2},
+      {id:'religious', title:'Lighter / religious reading', target:2},
+      {id:'reflection', title:'Reflection of ideas', target:null},
+      {id:'intessay', title:'Writing intellectual essays', target:null},
+      {id:'language', title:'Language study exploration', target:null},
+    ]},
+    { id:'creative', name:'Creative Expression', collapsed:false, items:[
+      {id:'guitar', title:'Musicking', target:null},
+      {id:'aesthetic', title:'Aesthetic exploration', target:null},
+      {id:'visual', title:'Visual Entertainment', target:null},
+      {id:'essay', title:'Writing essays', target:null},
+      {id:'newexp', title:'New experiences', target:null},
+      {id:'nature', title:'Nature', target:null},
+    ]},
+    { id:'social', name:'Social', collapsed:false, items:[
+      {id:'career', title:'Track career trajectory', target:null},
+      {id:'network', title:'Build network', target:null},
+      {id:'beneficial', title:'Be beneficial to others', target:null},
+      {id:'connections', title:'Deepen personal connections', target:null},
+      {id:'therapy', title:'Therapy session', target:1},
+    ]},
+  ];
+
+  const DEFAULT_GROCERIES = [
+    '21 eggs','250g pumpkin seeds','700g oats','2kg low-fat / Greek yogurt','3.8L low-fat milk',
+    '2kg bananas','400g frozen blueberries','1.2–1.5kg apples','1.2–1.5kg oranges','400g feta cheese',
+    '1.5kg skinless chicken thighs','2kg potatoes','500g lentils','300g cleaned squid',
+    '7 scoops protein powder','7 softgels Omega-3 + Vit D','200g flatbread','400g spinach'
+  ].map((label,i)=>({id:'n'+i, label}));
+
+  // ---------------- STATE ----------------
+  let editMode = false;
+  let floorConfig = loadJSON(FLOOR_CONFIG_KEY, DEFAULT_FLOOR);
+  let floorState = loadJSON(FLOOR_STATE_KEY, {});
+  let categories = loadJSON(CATEGORIES_KEY, DEFAULT_CATEGORIES);
+  let weekState = loadJSON(WEEK_STATE_KEY, { counters:{}, nutri:{} });
+  let groceryConfig = loadJSON(GROCERY_CONFIG_KEY, DEFAULT_GROCERIES);
+  let groceryCollapsed = loadJSON(GROCERY_COLLAPSE_KEY, false);
+  let notes = loadJSON(NOTES_KEY, []);
+
+  const persistFloorConfig = () => saveJSON(FLOOR_CONFIG_KEY, floorConfig);
+  const persistFloorState = () => saveJSON(FLOOR_STATE_KEY, floorState);
+  const persistCategories = () => saveJSON(CATEGORIES_KEY, categories);
+  const persistWeekState = () => saveJSON(WEEK_STATE_KEY, weekState);
+  const persistGroceryConfig = () => saveJSON(GROCERY_CONFIG_KEY, groceryConfig);
+  const persistGroceryCollapsed = () => saveJSON(GROCERY_COLLAPSE_KEY, groceryCollapsed);
+  const persistNotes = () => saveJSON(NOTES_KEY, notes);
+
+  // ================= EDIT MODE TOGGLE =================
+  document.getElementById('editModeBtn').addEventListener('click', ()=>{
+    editMode = !editMode;
+    document.body.classList.toggle('edit-mode', editMode);
+    document.getElementById('editModeBtn').textContent = editMode ? '✓ Done' : '✎ Edit';
+  });
+
+  // ================= FLOOR =================
+  function renderFloor(){
+    const container = document.getElementById('floorItems');
+    container.innerHTML = '';
+    document.getElementById('floorTotal').textContent = floorConfig.length;
+
+    floorConfig.forEach(item=>{
+      const checked = !!floorState[item.id];
+      const row = document.createElement('div');
+      row.className = 'item' + (checked ? ' checked' : '');
+      row.innerHTML = `
+        <div class="box">${checkSvg}</div>
+        <div class="item-text">
+          <div class="item-title"></div>
+          ${item.note ? `<div class="item-note"></div>` : ''}
+        </div>
+        <div class="row-actions">
+          <button class="icon-btn edit-btn" title="edit">✎</button>
+          <button class="icon-btn danger del-btn" title="remove">✕</button>
+        </div>`;
+      row.querySelector('.item-title').textContent = item.title;
+      if(item.note) row.querySelector('.item-note').textContent = item.note;
+
+      row.querySelector('.box').addEventListener('click', ()=>{
+        floorState[item.id] = !floorState[item.id];
+        persistFloorState();
+        renderFloor();
+      });
+      row.querySelector('.edit-btn').addEventListener('click', ()=> editFloorItem(row, item));
+      row.querySelector('.del-btn').addEventListener('click', ()=>{
+        if(confirm(`Remove "${item.title}" from the floor?`)){
+          floorConfig = floorConfig.filter(f=>f.id!==item.id);
+          delete floorState[item.id];
+          persistFloorConfig(); persistFloorState();
+          renderFloor();
+        }
+      });
+      container.appendChild(row);
+    });
+    computeFoundation();
+  }
+
+  function editFloorItem(row, item){
+    row.innerHTML = `
+      <div class="edit-form">
+        <input type="text" class="edit-input" value="${escapeHtml(item.title)}" placeholder="Title">
+        <input type="text" class="edit-input" value="${escapeHtml(item.note||'')}" placeholder="Optional note">
+        <button class="edit-save">Save</button>
+        <button class="edit-cancel">Cancel</button>
+      </div>`;
+    const [titleInput, noteInput] = row.querySelectorAll('.edit-input');
+    row.querySelector('.edit-save').addEventListener('click', ()=>{
+      const t = titleInput.value.trim();
+      if(!t) return;
+      item.title = t; item.note = noteInput.value.trim();
+      persistFloorConfig();
+      renderFloor();
+    });
+    row.querySelector('.edit-cancel').addEventListener('click', renderFloor);
+  }
+
+  function computeFoundation(){
+    const total = floorConfig.length || 1;
+    const done = floorConfig.filter(f=>floorState[f.id]).length;
+    document.getElementById('foundationFill').style.width = (done/total*100) + '%';
+    document.getElementById('floorDone').textContent = done;
+  }
+
+  document.getElementById('floorAddBtn').addEventListener('click', ()=>{
+    const titleInput = document.getElementById('floorAddTitle');
+    const noteInput = document.getElementById('floorAddNote');
+    const title = titleInput.value.trim();
+    if(!title) return;
+    floorConfig.push({id:genId('floor'), title, note:noteInput.value.trim()});
+    persistFloorConfig();
+    titleInput.value=''; noteInput.value='';
+    renderFloor();
+  });
+
+  // ================= WEEKLY CATEGORIES =================
+  function renderCategories(){
+    const container = document.getElementById('categoriesContainer');
+    container.innerHTML = '';
+    categories.forEach(cat=>{
+      const isCollapsed = !!cat.collapsed;
+      const block = document.createElement('div');
+      block.className = 'category';
+      block.innerHTML = `
+        <div class="category-head">
+          <button class="chevron-btn${isCollapsed ? ' collapsed' : ''}" title="collapse/expand">▾</button>
+          <div class="category-label"></div>
+          <div class="category-rule"></div>
+          <div class="row-actions">
+            <button class="icon-btn edit-cat-btn" title="rename category">✎</button>
+            <button class="icon-btn danger del-cat-btn" title="delete category">✕</button>
+          </div>
+        </div>
+        <div class="collapsible-body" style="${isCollapsed ? 'display:none;' : ''}">
+          <div class="items-holder"></div>
+          ${cat.id === 'intellectual' ? '<div class="cap-note">Course, philosophy, and lighter reading have soft 2×/wk targets — pick what fits rather than chasing all three.</div>' : ''}
+          <div class="add-row">
+            <input type="text" class="add-input add-item-title" placeholder="New item…">
+            <input type="number" min="0" class="add-input small add-item-target" placeholder="Target (optional)">
+            <button class="add-btn add-item-btn">Add</button>
+          </div>
+        </div>`;
+      block.querySelector('.category-label').textContent = cat.name;
+
+      const itemsHolder = block.querySelector('.items-holder');
+      cat.items.forEach(item=>{
+        const val = weekState.counters[item.id] || 0;
+        const hasTarget = item.target !== null && item.target !== undefined;
+        const isComplete = hasTarget && val >= item.target;
+        const row = document.createElement('div');
+        row.className = 'counter-row' + (isComplete ? ' complete' : '');
+        row.innerHTML = `
+          <div class="counter-info">
+            <div class="counter-title"></div>
+          </div>
+          <div class="counter-controls">
+            <button class="minus-btn" ${val<=0?'disabled':''} aria-label="decrease">−</button>
+            <div class="counter-value"></div>
+            <button class="icon-btn edit-item-btn" title="edit">✎</button>
+            <button class="icon-btn danger del-item-btn" title="remove">✕</button>
+          </div>`;
+        row.querySelector('.counter-title').textContent = item.title;
+        row.querySelector('.counter-value').textContent = hasTarget ? (val + '/' + item.target) : String(val);
+
+        row.querySelector('.counter-info').addEventListener('click', ()=>{
+          weekState.counters[item.id] = (weekState.counters[item.id]||0) + 1;
+          persistWeekState();
+          renderCategories();
+        });
+        row.querySelector('.minus-btn').addEventListener('click', (e)=>{
+          e.stopPropagation();
+          weekState.counters[item.id] = Math.max(0, (weekState.counters[item.id]||0) - 1);
+          persistWeekState();
+          renderCategories();
+        });
+        row.querySelector('.edit-item-btn').addEventListener('click', (e)=>{
+          e.stopPropagation();
+          editCategoryItem(row, cat, item);
+        });
+        row.querySelector('.del-item-btn').addEventListener('click', (e)=>{
+          e.stopPropagation();
+          if(confirm(`Remove "${item.title}"?`)){
+            cat.items = cat.items.filter(i=>i.id!==item.id);
+            delete weekState.counters[item.id];
+            persistCategories(); persistWeekState();
+            renderCategories();
+          }
+        });
+        itemsHolder.appendChild(row);
+      });
+
+      // collapse toggle — clicking the chevron or the label toggles, but not the edit/delete icons
+      const toggleCollapse = ()=>{
+        cat.collapsed = !cat.collapsed;
+        persistCategories();
+        renderCategories();
+      };
+      block.querySelector('.chevron-btn').addEventListener('click', toggleCollapse);
+      block.querySelector('.category-label').addEventListener('click', toggleCollapse);
+
+      block.querySelector('.edit-cat-btn').addEventListener('click', (e)=>{
+        e.stopPropagation();
+        editCategoryName(block, cat);
+      });
+      block.querySelector('.del-cat-btn').addEventListener('click', (e)=>{
+        e.stopPropagation();
+        if(confirm(`Delete the entire "${cat.name}" category and all its items?`)){
+          cat.items.forEach(i=> delete weekState.counters[i.id]);
+          categories = categories.filter(c=>c.id!==cat.id);
+          persistCategories(); persistWeekState();
+          renderCategories();
+        }
+      });
+      block.querySelector('.add-item-btn').addEventListener('click', ()=>{
+        const titleInput = block.querySelector('.add-item-title');
+        const targetInput = block.querySelector('.add-item-target');
+        const title = titleInput.value.trim();
+        if(!title) return;
+        const targetVal = targetInput.value.trim();
+        cat.items.push({id:genId('item'), title, target: targetVal ? parseInt(targetVal,10) : null});
+        persistCategories();
+        titleInput.value=''; targetInput.value='';
+        renderCategories();
+      });
+
+      container.appendChild(block);
+    });
+  }
+
+  function editCategoryItem(row, cat, item){
+    row.innerHTML = `
+      <div class="edit-form">
+        <input type="text" class="edit-input" value="${escapeHtml(item.title)}" placeholder="Title">
+        <input type="number" min="0" class="edit-input small" value="${item.target!==null && item.target!==undefined ? item.target : ''}" placeholder="Target">
+        <button class="edit-save">Save</button>
+        <button class="edit-cancel">Cancel</button>
+      </div>`;
+    const [titleInput, targetInput] = row.querySelectorAll('.edit-input');
+    row.querySelector('.edit-save').addEventListener('click', ()=>{
+      const t = titleInput.value.trim();
+      if(!t) return;
+      item.title = t;
+      const tv = targetInput.value.trim();
+      item.target = tv ? parseInt(tv,10) : null;
+      persistCategories();
+      renderCategories();
+    });
+    row.querySelector('.edit-cancel').addEventListener('click', renderCategories);
+  }
+
+  function editCategoryName(block, cat){
+    const head = block.querySelector('.category-head');
+    head.innerHTML = `
+      <input type="text" class="category-label-input" value="${escapeHtml(cat.name)}">
+      <div class="category-rule"></div>
+      <div class="row-actions">
+        <button class="edit-save">Save</button>
+        <button class="edit-cancel">Cancel</button>
+      </div>`;
+    const input = head.querySelector('.category-label-input');
+    input.focus();
+    head.querySelector('.edit-save').addEventListener('click', ()=>{
+      const v = input.value.trim();
+      if(!v) return;
+      cat.name = v;
+      persistCategories();
+      renderCategories();
+    });
+    head.querySelector('.edit-cancel').addEventListener('click', renderCategories);
+  }
+
+  document.getElementById('addCategoryBtn').addEventListener('click', ()=>{
+    const input = document.getElementById('newCategoryName');
+    const name = input.value.trim();
+    if(!name) return;
+    categories.push({id:genId('cat'), name, collapsed:false, items:[]});
+    persistCategories();
+    input.value='';
+    renderCategories();
+  });
+
+  document.getElementById('resetWeekBtn').addEventListener('click', ()=>{
+    if(confirm('Reset all weekly counters and groceries to zero?')){
+      weekState = { counters:{}, nutri:{} };
+      persistWeekState();
+      renderCategories();
+      renderGroceries();
+    }
+  });
+
+  // ================= GROCERIES =================
+  function renderGroceryHeader(){
+    const chevron = document.getElementById('groceryChevron');
+    const body = document.getElementById('groceryBody');
+    chevron.classList.toggle('collapsed', groceryCollapsed);
+    body.style.display = groceryCollapsed ? 'none' : '';
+  }
+  function toggleGroceryCollapse(){
+    groceryCollapsed = !groceryCollapsed;
+    persistGroceryCollapsed();
+    renderGroceryHeader();
+  }
+  document.getElementById('groceryChevron').addEventListener('click', toggleGroceryCollapse);
+  document.querySelector('#groceryHead .category-label').addEventListener('click', toggleGroceryCollapse);
+
+  function renderGroceries(){
+    const grid = document.getElementById('nutriGrid');
+    grid.innerHTML = '';
+    groceryConfig.forEach(item=>{
+      const checked = !!weekState.nutri[item.id];
+      const row = document.createElement('div');
+      row.className = 'nutri-item' + (checked ? ' checked' : '');
+      row.innerHTML = `
+        <div class="nutri-box">${checkSvg}</div>
+        <div class="nutri-label"></div>
+        <div class="row-actions">
+          <button class="icon-btn edit-btn" title="edit">✎</button>
+          <button class="icon-btn danger del-btn" title="remove">✕</button>
+        </div>`;
+      row.querySelector('.nutri-label').textContent = item.label;
+      const toggle = ()=>{
+        weekState.nutri[item.id] = !weekState.nutri[item.id];
+        persistWeekState();
+        renderGroceries();
+      };
+      row.querySelector('.nutri-box').addEventListener('click', toggle);
+      row.querySelector('.nutri-label').addEventListener('click', toggle);
+      row.querySelector('.edit-btn').addEventListener('click', ()=> editGroceryItem(row, item));
+      row.querySelector('.del-btn').addEventListener('click', ()=>{
+        if(confirm(`Remove "${item.label}"?`)){
+          groceryConfig = groceryConfig.filter(g=>g.id!==item.id);
+          delete weekState.nutri[item.id];
+          persistGroceryConfig(); persistWeekState();
+          renderGroceries();
+        }
+      });
+      grid.appendChild(row);
+    });
+  }
+
+  function editGroceryItem(row, item){
+    row.innerHTML = `
+      <div class="edit-form">
+        <input type="text" class="edit-input" value="${escapeHtml(item.label)}">
+        <button class="edit-save">Save</button>
+        <button class="edit-cancel">Cancel</button>
+      </div>`;
+    const input = row.querySelector('.edit-input');
+    row.querySelector('.edit-save').addEventListener('click', ()=>{
+      const v = input.value.trim();
+      if(!v) return;
+      item.label = v;
+      persistGroceryConfig();
+      renderGroceries();
+    });
+    row.querySelector('.edit-cancel').addEventListener('click', renderGroceries);
+  }
+
+  document.getElementById('groceryAddBtn').addEventListener('click', ()=>{
+    const input = document.getElementById('groceryAddInput');
+    const label = input.value.trim();
+    if(!label) return;
+    groceryConfig.push({id:genId('g'), label});
+    persistGroceryConfig();
+    input.value='';
+    renderGroceries();
+  });
+
+  // ================= NOTES (not collapsible, always visible) =================
+  function renderNotes(){
+    const list = document.getElementById('noteList');
+    list.innerHTML = '';
+    if(notes.length === 0){
+      list.innerHTML = '<div class="notes-empty">Nothing here yet.</div>';
+      return;
+    }
+    const sorted = [...notes].sort((a,b)=>{
+      if(a.done !== b.done) return a.done ? 1 : -1;
+      if(a.date && b.date) return a.date.localeCompare(b.date);
+      if(a.date) return -1;
+      if(b.date) return 1;
+      return a.createdAt - b.createdAt;
+    });
+    sorted.forEach(note=>{
+      const row = document.createElement('div');
+      row.className = 'note-row' + (note.done ? ' done' : '');
+      row.innerHTML = `
+        <div class="note-check">${checkSvg}</div>
+        <div class="note-body">
+          <div class="note-text"></div>
+          ${note.date ? '<div class="note-date-label"></div>' : ''}
+        </div>
+        <div class="row-actions">
+          <button class="icon-btn edit-btn" title="edit">✎</button>
+          <button class="icon-btn danger del-btn" title="delete">✕</button>
+        </div>`;
+      row.querySelector('.note-text').textContent = note.text;
+      if(note.date) row.querySelector('.note-date-label').textContent = formatDate(note.date);
+
+      row.querySelector('.note-check').addEventListener('click', ()=>{
+        note.done = !note.done;
+        persistNotes();
+        renderNotes();
+      });
+      row.querySelector('.edit-btn').addEventListener('click', ()=> editNote(row, note));
+      row.querySelector('.del-btn').addEventListener('click', ()=>{
+        notes = notes.filter(n=>n.id!==note.id);
+        persistNotes();
+        renderNotes();
+      });
+      list.appendChild(row);
+    });
+  }
+
+  function editNote(row, note){
+    row.innerHTML = `
+      <div class="edit-form">
+        <input type="text" class="edit-input" value="${escapeHtml(note.text)}" placeholder="Note text">
+        <input type="date" class="edit-input small" value="${note.date||''}">
+        <button class="edit-save">Save</button>
+        <button class="edit-cancel">Cancel</button>
+      </div>`;
+    const [textInput] = row.querySelectorAll('input[type=text]');
+    const dateInput = row.querySelector('input[type=date]');
+    row.querySelector('.edit-save').addEventListener('click', ()=>{
+      const t = textInput.value.trim();
+      if(!t) return;
+      note.text = t;
+      note.date = dateInput.value || null;
+      persistNotes();
+      renderNotes();
+    });
+    row.querySelector('.edit-cancel').addEventListener('click', renderNotes);
+  }
+
+  function formatDate(iso){
+    const d = new Date(iso + 'T00:00:00');
+    return d.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' });
+  }
+
+  function addNote(){
+    const input = document.getElementById('noteInput');
+    const dateInput = document.getElementById('noteDate');
+    const text = input.value.trim();
+    if(!text) return;
+    notes.push({ id: genId('note'), text, date: dateInput.value || null, done:false, createdAt: Date.now() });
+    persistNotes();
+    input.value=''; dateInput.value='';
+    renderNotes();
+    input.focus();
+  }
+  document.getElementById('noteAddBtn').addEventListener('click', addNote);
+  document.getElementById('noteInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter') addNote(); });
+
+  // ================= INIT =================
+  renderFloor();
+  renderCategories();
+  renderGroceries();
+  renderGroceryHeader();
+  renderNotes();
+
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', ()=>{
+      navigator.serviceWorker.register('service-worker.js').catch(()=>{});
+    });
+  }
+</script>
+</body>
+</html>
