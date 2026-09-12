@@ -458,8 +458,10 @@
           <div class="counter-controls">
             <button class="minus-btn" ${val<=0?'disabled':''} aria-label="decrease">−</button>
             <div class="counter-value"></div>
-            <button class="icon-btn edit-item-btn" title="edit">✎</button>
-            <button class="icon-btn danger del-item-btn" title="remove">✕</button>
+            <div class="row-actions">
+              <button class="icon-btn edit-item-btn" title="edit">✎</button>
+              <button class="icon-btn danger del-item-btn" title="remove">✕</button>
+            </div>
           </div>`;
         row.querySelector('.counter-title').textContent = item.title;
         row.querySelector('.counter-value').textContent = hasTarget ? (val + '/' + item.target) : String(val);
